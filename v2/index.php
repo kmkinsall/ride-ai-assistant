@@ -1413,7 +1413,20 @@ Response format:
 
         function askQuestion(question) {
             messageInput.value = question;
-            sendMessage();
+            messageInput.focus();
+
+            // Auto-resize the textarea to fit content
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
+
+            // Show feedback - let user decide to send
+            showToast('Question ready - press Enter or click Send', 'info', 3000);
+
+            // On mobile, collapse the reference panel
+            if (window.innerWidth < 768) {
+                referencePanel.classList.add('collapsed');
+                panelVisible = false;
+            }
         }
 
         async function sendMessage() {
