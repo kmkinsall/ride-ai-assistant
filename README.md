@@ -6,6 +6,24 @@ An AI-powered web application designed to help Rhode Island educators understand
 
 The RIDE AI Guidance Assistant is an intelligent chatbot that helps K-12 educators, administrators, and policy makers navigate AI implementation in their schools and districts. It provides instant answers, policy drafting assistance, and personalized guidance based on the official RIDE framework.
 
+## Screenshots
+
+### Welcome Screen
+![Welcome Screen](Ride1.png)
+*The welcome screen with suggested questions to get started*
+
+### Chat Interface - Learn Mode
+![Learn Mode](Ride2.png)
+*Learn Mode provides educational, narrative-driven explanations*
+
+### Knowledge Base Sidebar
+![Knowledge Base](Ride3.png)
+*Full RIDE guidance document available in the sidebar*
+
+### Dark Mode
+![Dark Mode](Ride4.png)
+*Full dark mode support for comfortable viewing*
+
 ## Features
 
 ### Dual Conversation Modes
