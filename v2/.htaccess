@@ -1,0 +1,16 @@
+# Protect .env file from direct access
+<Files ".env">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
+</Files>
+
+# Optional: Increase PHP limits for streaming
+<IfModule mod_php.c>
+    php_value max_execution_time 120
+    php_value output_buffering 0
+</IfModule>
