@@ -182,6 +182,23 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
         /* Copy button styles */
         .message-actions { opacity: 0; transition: opacity 0.2s ease; }
         .message-wrapper:hover .message-actions { opacity: 1; }
+
+        /* Page load animation */
+        @keyframes pageFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .page-enter { animation: pageFadeIn 0.4s ease-out forwards; }
+        .page-enter header { animation: slideDown 0.5s ease-out 0.1s both; }
+        .page-enter main { animation: slideUp 0.5s ease-out 0.2s both; }
         .copy-btn:active { transform: scale(0.95); }
         @media (max-width: 767px) { .message-actions { opacity: 1; } }
         .sidebar-panel { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: right center; }
@@ -255,7 +272,7 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
         .dark .kb-content li { color: #B1ADA1; }
     </style>
 </head>
-<body class="bg-neutral-50 dark:bg-dark-900 text-neutral-800 dark:text-dark-50 min-h-screen transition-colors duration-200">
+<body class="bg-neutral-50 dark:bg-dark-900 text-neutral-800 dark:text-dark-50 min-h-screen transition-colors duration-200 page-enter">
     <div class="flex flex-col h-screen">
         <!-- Header -->
         <header class="bg-neutral-50 dark:bg-dark-800 border-b border-neutral-200 dark:border-dark-500 px-6 py-4 flex items-center justify-between flex-shrink-0">

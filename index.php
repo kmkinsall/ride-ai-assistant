@@ -138,10 +138,19 @@ if ($showLoading):
         .delay-1 { animation-delay: 0.1s; opacity: 0; }
         .delay-2 { animation-delay: 0.3s; opacity: 0; }
         .delay-3 { animation-delay: 0.5s; opacity: 0; }
+
+        /* Fade out animation for smooth transition */
+        @keyframes fadeOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(1.02); }
+        }
+        .animate-fade-out {
+            animation: fadeOut 0.4s ease-in forwards;
+        }
     </style>
 </head>
 <body class="bg-neutral-50 dark:bg-dark-800 min-h-screen flex items-center justify-center transition-colors duration-200">
-    <div class="text-center px-6">
+    <div id="loadingContent" class="text-center px-6">
         <!-- Logo/Icon -->
         <div class="animate-fade-in mb-8">
             <div class="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-accent-500/30">
@@ -176,10 +185,16 @@ if ($showLoading):
             document.documentElement.classList.add('dark');
         }
 
-        // Redirect after 2 seconds
+        // Smooth transition: fade out then redirect
         setTimeout(function() {
-            window.location.href = 'v2/index.php';
-        }, 2000);
+            const content = document.getElementById('loadingContent');
+            content.classList.add('animate-fade-out');
+
+            // Wait for fade-out animation to complete, then redirect
+            setTimeout(function() {
+                window.location.href = 'v2/index.php';
+            }, 400);
+        }, 1800); // Start fade slightly before 2s mark
     </script>
 </body>
 </html>
