@@ -200,6 +200,27 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
         .page-enter header { animation: slideDown 0.5s ease-out 0.1s both; }
         .page-enter main { animation: slideUp 0.5s ease-out 0.2s both; }
         .copy-btn:active { transform: scale(0.95); }
+
+        /* Smart header - hide on scroll down, show on scroll up */
+        .smart-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            transition: transform 0.3s ease;
+        }
+        .smart-header.header-hidden {
+            transform: translateY(-100%);
+        }
+        .smart-header-spacer {
+            height: 73px; /* Match header height (py-4 = 32px + content ~40px) */
+        }
+        @media (max-width: 767px) {
+            .smart-header-spacer {
+                height: 65px; /* Slightly smaller on mobile */
+            }
+        }
         @media (max-width: 767px) { .message-actions { opacity: 1; } }
         .sidebar-panel { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: right center; }
         .sidebar-panel.collapsed { width: 0 !important; opacity: 0; transform: translateX(100%); overflow: hidden; border-left: none; padding: 0; }
@@ -312,7 +333,7 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 <body class="bg-neutral-50 dark:bg-dark-900 text-neutral-800 dark:text-dark-50 min-h-screen transition-colors duration-200 page-enter">
     <div class="flex flex-col h-screen">
         <!-- Header -->
-        <header class="bg-neutral-50 dark:bg-dark-800 border-b border-neutral-200 dark:border-dark-500 px-6 py-4 flex items-center justify-between flex-shrink-0">
+        <header id="mainHeader" class="smart-header bg-neutral-50 dark:bg-dark-800 border-b border-neutral-200 dark:border-dark-500 px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-accent-500 dark:bg-accent-500 rounded-lg flex items-center justify-center">
                     <i data-lucide="book-open" class="w-5 h-5 text-white"></i>
@@ -348,6 +369,8 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
                 </a>
             </div>
         </header>
+        <!-- Spacer for fixed header -->
+        <div class="smart-header-spacer flex-shrink-0"></div>
 
         <!-- Main Content -->
         <main class="flex-1 flex overflow-hidden">
@@ -1703,6 +1726,36 @@ Response format:
                 }
             });
         }
+
+        // Smart header - hide on scroll down, show on scroll up
+        const mainHeader = document.getElementById('mainHeader');
+        let lastScrollTop = 0;
+        let scrollThreshold = 10; // Minimum scroll distance to trigger hide/show
+
+        chatMessages.addEventListener('scroll', function() {
+            const scrollTop = chatMessages.scrollTop;
+            const scrollDelta = scrollTop - lastScrollTop;
+
+            // Only trigger if scroll distance exceeds threshold
+            if (Math.abs(scrollDelta) > scrollThreshold) {
+                if (scrollDelta > 0 && scrollTop > 50) {
+                    // Scrolling down - hide header
+                    mainHeader.classList.add('header-hidden');
+                } else if (scrollDelta < 0) {
+                    // Scrolling up - show header
+                    mainHeader.classList.remove('header-hidden');
+                }
+            }
+
+            lastScrollTop = scrollTop;
+        });
+
+        // Always show header when at top of chat
+        chatMessages.addEventListener('scroll', function() {
+            if (chatMessages.scrollTop < 20) {
+                mainHeader.classList.remove('header-hidden');
+            }
+        });
     </script>
 </body>
 </html>
