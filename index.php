@@ -299,8 +299,9 @@ endif;
                 padding-right: env(safe-area-inset-right);
             }
 
-            /* Larger touch targets (Apple minimum 44px) */
-            button, a { min-height: 44px; }
+            /* Larger touch targets (Apple minimum 44px) - exclude header icons */
+            main button, main a, section button, section a, form button { min-height: 44px; }
+            header button, header a { min-height: auto; min-width: 44px; padding: 8px; }
 
             /* Prevent iOS zoom on input focus */
             #password { font-size: 16px !important; }
@@ -413,10 +414,10 @@ endif;
                 <!-- Slideshow Container -->
                 <div id="slideshow" class="relative overflow-hidden rounded-2xl shadow-2xl border border-neutral-200 dark:border-dark-500">
                     <div id="slides" class="flex transition-transform duration-500 ease-in-out">
-                        <img src="Ride1.png" alt="RIDE AI Assistant - Welcome Screen" class="w-full flex-shrink-0">
                         <img src="Ride2.png" alt="RIDE AI Assistant - Chat Interface" class="w-full flex-shrink-0">
                         <img src="Ride3.png" alt="RIDE AI Assistant - Learn Mode" class="w-full flex-shrink-0">
                         <img src="Ride4.png" alt="RIDE AI Assistant - Build Mode" class="w-full flex-shrink-0">
+                        <img src="Ride1.png" alt="RIDE AI Assistant - Welcome Screen" class="w-full flex-shrink-0">
                     </div>
                 </div>
                 <!-- Navigation Arrows -->

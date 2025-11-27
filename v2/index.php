@@ -203,8 +203,9 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
             /* Hide reference panel completely on mobile */
             .sidebar-panel { display: none !important; }
 
-            /* Larger touch targets */
-            button, a { min-height: 44px; }
+            /* Larger touch targets - exclude header icons */
+            main button, main a, form button, form a { min-height: 44px; }
+            header button, header a { min-height: auto; min-width: 44px; padding: 8px; }
 
             /* Fix chat input area */
             #messageInput { font-size: 16px !important; } /* Prevents iOS zoom on focus */
@@ -913,22 +914,34 @@ Response format:
                     addAssistantMessage(msg.content);
                 }
             });
-            // Update mode UI
-            setMode(currentMode);
+            // Update mode UI silently (don't show "Switched to X Mode" toast)
+            setMode(currentMode, true);
         }
 
         function clearChatStorage() {
             localStorage.removeItem('rideChat');
         }
 
-        // Copy to clipboard function
-        function copyToClipboard(text, button) {
-            navigator.clipboard.writeText(text).then(() => {
+        // Copy to clipboard function - copies both HTML (formatted) and plain text
+        async function copyToClipboard(text, button) {
+            try {
+                // Convert markdown to HTML for rich text pasting
+                const htmlContent = marked.parse(text);
+
+                // Create clipboard items with both formats
+                const clipboardItem = new ClipboardItem({
+                    'text/html': new Blob([htmlContent], { type: 'text/html' }),
+                    'text/plain': new Blob([text], { type: 'text/plain' })
+                });
+
+                await navigator.clipboard.write([clipboardItem]);
+
+                // Show success feedback
                 const icon = button.querySelector('svg') || button.querySelector('i');
                 const originalIcon = icon.getAttribute('data-lucide');
                 icon.setAttribute('data-lucide', 'check');
                 lucide.createIcons();
-                showToast('Copied to clipboard', 'success', 2000);
+                showToast('Copied with formatting', 'success', 2000);
                 setTimeout(() => {
                     const newIcon = button.querySelector('svg') || button.querySelector('i');
                     if (newIcon) {
@@ -936,9 +949,26 @@ Response format:
                         lucide.createIcons();
                     }
                 }, 2000);
-            }).catch(() => {
-                showToast('Failed to copy', 'error');
-            });
+            } catch (err) {
+                // Fallback to plain text if ClipboardItem not supported
+                try {
+                    await navigator.clipboard.writeText(text);
+                    const icon = button.querySelector('svg') || button.querySelector('i');
+                    const originalIcon = icon.getAttribute('data-lucide');
+                    icon.setAttribute('data-lucide', 'check');
+                    lucide.createIcons();
+                    showToast('Copied to clipboard', 'success', 2000);
+                    setTimeout(() => {
+                        const newIcon = button.querySelector('svg') || button.querySelector('i');
+                        if (newIcon) {
+                            newIcon.setAttribute('data-lucide', originalIcon);
+                            lucide.createIcons();
+                        }
+                    }, 2000);
+                } catch (fallbackErr) {
+                    showToast('Failed to copy', 'error');
+                }
+            }
         }
 
         // Initialize
@@ -947,12 +977,6 @@ Response format:
         }
         updateDistrictBadge();
         loadDistrictForm();
-
-        // Restore chat if available
-        if (loadChatFromStorage()) {
-            restoreChatUI();
-            showToast('Previous conversation restored', 'info', 3000);
-        }
 
         // Toast notification system
         const toastContainer = document.getElementById('toastContainer');
@@ -1099,22 +1123,28 @@ Response format:
             modeDropdown.classList.add('hidden');
         });
 
-        function setMode(mode) {
+        function setMode(mode, silent = false) {
             currentMode = mode;
             if (mode === 'learn') {
                 modeIcon.setAttribute('data-lucide', 'graduation-cap');
                 modeLabel.textContent = 'Learn';
                 learnCheck.classList.remove('hidden');
                 buildCheck.classList.add('hidden');
-                showToast('Switched to Learn Mode', 'info');
+                if (!silent) showToast('Switched to Learn Mode', 'info');
             } else {
                 modeIcon.setAttribute('data-lucide', 'hammer');
                 modeLabel.textContent = 'Build';
                 learnCheck.classList.add('hidden');
                 buildCheck.classList.remove('hidden');
-                showToast('Switched to Build Mode', 'info');
+                if (!silent) showToast('Switched to Build Mode', 'info');
             }
             lucide.createIcons();
+        }
+
+        // Restore chat if available (must be after setMode is defined)
+        if (loadChatFromStorage()) {
+            restoreChatUI();
+            showToast('Previous conversation restored', 'info', 3000);
         }
 
         // Settings modal
