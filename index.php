@@ -67,7 +67,7 @@ if ($showLoading):
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Loading - RIDE AI Assistant</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -191,7 +191,7 @@ endif;
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>RIDE AI Guidance Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -286,6 +286,69 @@ endif;
         .dark ::-webkit-scrollbar-track { background: #232220; }
         .dark ::-webkit-scrollbar-thumb { background: #3D3A34; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #5C5850; }
+
+        /* Mobile optimizations for iPhone portrait mode */
+        @media (max-width: 767px) {
+            html { font-size: 16px; }
+
+            /* Safe area for iPhone notch and home indicator */
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+
+            /* Larger touch targets (Apple minimum 44px) */
+            button, a { min-height: 44px; }
+
+            /* Prevent iOS zoom on input focus */
+            #password { font-size: 16px !important; }
+
+            /* Responsive header */
+            header .max-w-6xl { padding-left: 1rem; padding-right: 1rem; }
+            header h1 { font-size: 0.9375rem; }
+            header p { font-size: 0.6875rem; }
+
+            /* Responsive hero section */
+            .py-16 { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+            .md\:py-24 { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+
+            /* Slideshow improvements for mobile */
+            #prevSlide, #nextSlide {
+                opacity: 1 !important;
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+
+            /* Grid improvements */
+            .grid.md\:grid-cols-3 { gap: 1rem; }
+            .grid.md\:grid-cols-2 { gap: 1.5rem; }
+
+            /* Footer adjustments */
+            footer { text-align: center; }
+            footer .flex { flex-direction: column; }
+        }
+
+        /* Extra small screens (iPhone SE, etc.) */
+        @media (max-width: 375px) {
+            html { font-size: 15px; }
+
+            /* Compact header */
+            header h1 { font-size: 0.875rem; }
+            .w-10.h-10 { width: 2rem; height: 2rem; }
+            header .w-5.h-5 { width: 1rem; height: 1rem; }
+
+            /* Smaller hero text */
+            .text-3xl { font-size: 1.5rem; }
+            .text-lg { font-size: 0.9375rem; }
+        }
+
+        /* Prevent horizontal scroll */
+        body { overflow-x: hidden; }
+
+        /* Smooth scrolling for iOS */
+        html { -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
     </style>
 </head>
 <body class="bg-neutral-50 dark:bg-dark-800 min-h-screen transition-colors duration-200">

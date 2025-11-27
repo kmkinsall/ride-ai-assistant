@@ -11,7 +11,7 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>RIDE AI Guidance Assistant v2</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23171717'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white' font-family='system-ui'>AI</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -158,6 +158,48 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
         .sidebar-panel { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: right center; }
         .sidebar-panel.collapsed { width: 0 !important; opacity: 0; transform: translateX(100%); overflow: hidden; border-left: none; padding: 0; }
         .sidebar-panel.collapsed > * { opacity: 0; visibility: hidden; }
+
+        /* Mobile / iPhone Portrait Optimizations */
+        @media (max-width: 767px) {
+            html { font-size: 16px; }
+
+            /* Safe area for iPhone notch and home indicator */
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+
+            /* Hide reference panel completely on mobile */
+            .sidebar-panel { display: none !important; }
+
+            /* Larger touch targets */
+            button, a { min-height: 44px; }
+
+            /* Fix chat input area */
+            #messageInput { font-size: 16px !important; } /* Prevents iOS zoom on focus */
+
+            /* Improve message readability */
+            .markdown-content p { font-size: 0.9375rem; line-height: 1.6; }
+            .markdown-content li { font-size: 0.9375rem; }
+
+            /* Full width messages on mobile */
+            .max-w-\[85\%\] { max-width: 95% !important; }
+            .max-w-\[80\%\] { max-width: 90% !important; }
+        }
+
+        /* Extra small screens (iPhone SE, etc.) */
+        @media (max-width: 375px) {
+            html { font-size: 15px; }
+            .markdown-content p { font-size: 0.875rem; }
+        }
+
+        /* Prevent horizontal scroll */
+        body { overflow-x: hidden; }
+
+        /* Smooth scrolling for iOS */
+        #chatMessages { -webkit-overflow-scrolling: touch; }
         /* Knowledge base panel (Claude theme) */
         .kb-content h1 { font-size: 1.125rem; font-weight: 700; color: #3D3A34; margin-top: 1.5rem; margin-bottom: 0.5rem; }
         .kb-content h2 { font-size: 1rem; font-weight: 600; color: #5C5850; margin-top: 1.25rem; margin-bottom: 0.375rem; }
