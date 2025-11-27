@@ -1,5 +1,27 @@
-# Protect .env file from direct access
-<Files ".env">
+# Protect .env files from direct access
+<FilesMatch "^\.env">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Protect config.php from direct access (should only be included)
+<Files "config.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
+</Files>
+
+# Protect knowledge base markdown file
+<Files "knowledge-base.md">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>

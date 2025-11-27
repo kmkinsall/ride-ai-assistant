@@ -4,6 +4,12 @@
  * Uses OpenAI Responses API with GPT-5.1
  */
 
+// Prevent direct access - this file should only be included
+if (basename($_SERVER['PHP_SELF']) === basename(__FILE__)) {
+    http_response_code(403);
+    die('Direct access not allowed');
+}
+
 // Load .env file if it exists
 $envFile = __DIR__ . '/.env';
 if (file_exists($envFile)) {
