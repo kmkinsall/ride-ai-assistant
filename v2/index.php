@@ -252,6 +252,43 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
         .kb-content h2 { font-size: 1rem; font-weight: 600; color: #5C5850; margin-top: 1.25rem; margin-bottom: 0.375rem; }
         .kb-content h3 { font-size: 0.875rem; font-weight: 600; color: #8A867A; margin-top: 1rem; margin-bottom: 0.25rem; }
         .kb-content p { font-size: 0.8125rem; color: #5C5850; margin-bottom: 0.5rem; line-height: 1.6; }
+
+        /* Clickable headings in knowledge base */
+        .kb-content h1, .kb-content h2, .kb-content h3 {
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            margin-left: -0.5rem;
+            border-radius: 0.375rem;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        .kb-content h1:hover, .kb-content h2:hover, .kb-content h3:hover {
+            background-color: rgba(222, 115, 86, 0.1);
+            color: #DE7356;
+        }
+        .kb-content h1::after, .kb-content h2::after, .kb-content h3::after {
+            content: 'Ask AI →';
+            font-size: 0.625rem;
+            font-weight: 500;
+            opacity: 0;
+            margin-left: 0.5rem;
+            padding: 0.125rem 0.375rem;
+            background: #DE7356;
+            color: white;
+            border-radius: 0.25rem;
+            transition: opacity 0.15s ease;
+            white-space: nowrap;
+        }
+        .kb-content h1:hover::after, .kb-content h2:hover::after, .kb-content h3:hover::after {
+            opacity: 1;
+        }
+        .dark .kb-content h1:hover, .dark .kb-content h2:hover, .dark .kb-content h3:hover {
+            background-color: rgba(232, 144, 122, 0.15);
+            color: #E8907A;
+        }
+        .dark .kb-content h1::after, .dark .kb-content h2::after, .dark .kb-content h3::after {
+            background: #C15F3C;
+        }
         .kb-content ul, .kb-content ol { font-size: 0.8125rem; color: #5C5850; margin-left: 1.5rem; margin-bottom: 0.5rem; }
         .kb-content li { margin-bottom: 0.125rem; line-height: 1.5; }
         .kb-content table { font-size: 0.75rem; width: 100%; border-collapse: collapse; margin: 0.75rem 0; }
@@ -1623,6 +1660,35 @@ Response format:
 
         window.addEventListener('resize', handleResize);
         handleResize();
+
+        // Make knowledge base headings clickable to ask AI
+        const kbContent = document.querySelector('.kb-content');
+        if (kbContent) {
+            kbContent.addEventListener('click', function(e) {
+                const heading = e.target.closest('h1, h2, h3');
+                if (heading) {
+                    const topic = heading.textContent.replace('Ask AI →', '').trim();
+                    if (topic) {
+                        // Create a natural question based on the heading
+                        const question = `Tell me about "${topic}" according to the RIDE AI Guidance.`;
+                        messageInput.value = question;
+                        messageInput.focus();
+
+                        // Optionally auto-send the message
+                        sendMessage();
+
+                        // Show feedback
+                        showToast(`Asking about: ${topic}`, 'info', 2000);
+
+                        // On mobile, collapse the panel after clicking
+                        if (window.innerWidth < 768) {
+                            referencePanel.classList.add('collapsed');
+                            panelVisible = false;
+                        }
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>
