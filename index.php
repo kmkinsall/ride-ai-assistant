@@ -64,7 +64,7 @@ if (!$showLoading && isset($_SESSION['authenticated']) && $_SESSION['authenticat
 if ($showLoading):
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -180,9 +180,9 @@ if ($showLoading):
     </div>
 
     <script>
-        // Apply saved dark mode preference
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.documentElement.classList.add('dark');
+        // Apply saved dark mode preference (dark is default)
+        if (localStorage.getItem('darkMode') === 'false') {
+            document.documentElement.classList.remove('dark');
         }
 
         // Smooth transition: fade out then redirect
@@ -203,7 +203,7 @@ exit;
 endif;
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -815,9 +815,9 @@ endif;
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // Initialize dark mode from localStorage
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.documentElement.classList.add('dark');
+        // Initialize dark mode from localStorage (dark is default)
+        if (localStorage.getItem('darkMode') === 'false') {
+            document.documentElement.classList.remove('dark');
         }
 
         // Dark mode toggle

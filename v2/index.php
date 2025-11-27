@@ -15,7 +15,7 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -1025,9 +1025,9 @@ Response format:
             }
         }
 
-        // Initialize
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.documentElement.classList.add('dark');
+        // Initialize (dark mode is default)
+        if (localStorage.getItem('darkMode') === 'false') {
+            document.documentElement.classList.remove('dark');
         }
         updateDistrictBadge();
         loadDistrictForm();
