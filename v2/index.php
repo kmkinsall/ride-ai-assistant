@@ -1,6 +1,13 @@
 <?php
 session_start();
 
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+
 // Check authentication
 if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     header('Location: ../index.php');
@@ -155,6 +162,28 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
         .loading-dot { animation: pulse 1.4s ease-in-out infinite; }
         .loading-dot:nth-child(2) { animation-delay: 0.2s; }
         .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        /* Typing indicator animation */
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: currentColor;
+            animation: typingBounce 1.4s ease-in-out infinite;
+        }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        /* Copy button styles */
+        .message-actions { opacity: 0; transition: opacity 0.2s ease; }
+        .message-wrapper:hover .message-actions { opacity: 1; }
+        .copy-btn:active { transform: scale(0.95); }
+        @media (max-width: 767px) { .message-actions { opacity: 1; } }
         .sidebar-panel { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: right center; }
         .sidebar-panel.collapsed { width: 0 !important; opacity: 0; transform: translateX(100%); overflow: hidden; border-left: none; padding: 0; }
         .sidebar-panel.collapsed > * { opacity: 0; visibility: hidden; }
@@ -842,12 +871,88 @@ Response format:
         let districtProfile = JSON.parse(localStorage.getItem('districtProfile') || '{}');
         let abortController = null; // For canceling streaming requests
 
+        // Chat persistence functions
+        function saveChatToStorage() {
+            const chatData = {
+                history: conversationHistory,
+                mode: currentMode,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('rideChat', JSON.stringify(chatData));
+        }
+
+        function loadChatFromStorage() {
+            try {
+                const saved = localStorage.getItem('rideChat');
+                if (!saved) return false;
+
+                const chatData = JSON.parse(saved);
+                // Only load if less than 24 hours old
+                if (Date.now() - chatData.timestamp > 24 * 60 * 60 * 1000) {
+                    localStorage.removeItem('rideChat');
+                    return false;
+                }
+
+                if (chatData.history && chatData.history.length > 0) {
+                    conversationHistory = chatData.history;
+                    currentMode = chatData.mode || 'learn';
+                    return true;
+                }
+            } catch (e) {
+                console.error('Failed to load chat:', e);
+            }
+            return false;
+        }
+
+        function restoreChatUI() {
+            welcomeScreen.classList.add('hidden');
+            conversationHistory.forEach(msg => {
+                if (msg.role === 'user') {
+                    addMessage(msg.content, 'user');
+                } else if (msg.role === 'assistant') {
+                    addAssistantMessage(msg.content);
+                }
+            });
+            // Update mode UI
+            setMode(currentMode);
+        }
+
+        function clearChatStorage() {
+            localStorage.removeItem('rideChat');
+        }
+
+        // Copy to clipboard function
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const icon = button.querySelector('svg') || button.querySelector('i');
+                const originalIcon = icon.getAttribute('data-lucide');
+                icon.setAttribute('data-lucide', 'check');
+                lucide.createIcons();
+                showToast('Copied to clipboard', 'success', 2000);
+                setTimeout(() => {
+                    const newIcon = button.querySelector('svg') || button.querySelector('i');
+                    if (newIcon) {
+                        newIcon.setAttribute('data-lucide', originalIcon);
+                        lucide.createIcons();
+                    }
+                }, 2000);
+            }).catch(() => {
+                showToast('Failed to copy', 'error');
+            });
+        }
+
         // Initialize
         if (localStorage.getItem('darkMode') === 'true') {
             document.documentElement.classList.add('dark');
         }
         updateDistrictBadge();
         loadDistrictForm();
+
+        // Restore chat if available
+        if (loadChatFromStorage()) {
+            restoreChatUI();
+            showToast('Previous conversation restored', 'info', 3000);
+        }
 
         // Toast notification system
         const toastContainer = document.getElementById('toastContainer');
@@ -1181,6 +1286,7 @@ Response format:
             });
             if (confirmed) {
                 conversationHistory = [];
+                clearChatStorage();
                 chatContent.innerHTML = '';
                 chatContent.appendChild(welcomeScreen);
                 welcomeScreen.classList.remove('hidden');
@@ -1239,6 +1345,7 @@ Response format:
             welcomeScreen.classList.add('hidden');
             addMessage(message, 'user');
             conversationHistory.push({ role: 'user', content: message });
+            saveChatToStorage(); // Save after user message
 
             const streamingDiv = createStreamingMessage();
             let fullResponse = '';
@@ -1297,6 +1404,7 @@ Response format:
 
                 finalizeStreamingMessage(streamingDiv, fullResponse);
                 conversationHistory.push({ role: 'assistant', content: fullResponse });
+                saveChatToStorage(); // Save after assistant response
 
             } catch (error) {
                 if (error.name === 'AbortError') {
@@ -1305,6 +1413,7 @@ Response format:
                         // Keep partial response and mark as stopped
                         finalizeStreamingMessage(streamingDiv, fullResponse + '\n\n*[Response stopped by user]*');
                         conversationHistory.push({ role: 'assistant', content: fullResponse });
+                        saveChatToStorage();
                         showToast('Response stopped', 'info');
                     } else {
                         streamingDiv.remove();
@@ -1313,6 +1422,7 @@ Response format:
                 } else if (fullResponse) {
                     finalizeStreamingMessage(streamingDiv, fullResponse);
                     conversationHistory.push({ role: 'assistant', content: fullResponse });
+                    saveChatToStorage();
                 } else {
                     streamingDiv.remove();
                     addMessage('Error: ' + error.message, 'error');
@@ -1329,7 +1439,7 @@ Response format:
 
         function createStreamingMessage() {
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'mb-4 message-animate';
+            messageDiv.className = 'mb-4 message-animate message-wrapper';
             messageDiv.innerHTML = `
                 <div class="flex gap-3">
                     <div class="w-8 h-8 bg-neutral-100 dark:bg-dark-500 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -1337,7 +1447,12 @@ Response format:
                     </div>
                     <div class="flex-1 max-w-[85%]">
                         <div class="streaming-content markdown-content text-sm text-neutral-800 dark:text-dark-50">
-                            <span class="inline-block w-2 h-4 bg-neutral-400 dark:bg-dark-400 animate-pulse"></span>
+                            <div class="flex items-center gap-1.5 py-2 text-neutral-400 dark:text-dark-300">
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                                <span class="ml-2 text-xs">Thinking...</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1350,13 +1465,65 @@ Response format:
 
         function updateStreamingMessage(messageDiv, content) {
             const contentDiv = messageDiv.querySelector('.streaming-content');
-            contentDiv.innerHTML = marked.parse(content) + '<span class="inline-block w-2 h-4 bg-neutral-400 animate-pulse ml-1"></span>';
+            contentDiv.innerHTML = marked.parse(content) + '<span class="inline-block w-2 h-4 bg-neutral-400 dark:bg-dark-400 animate-pulse ml-1"></span>';
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         function finalizeStreamingMessage(messageDiv, content) {
             const contentDiv = messageDiv.querySelector('.streaming-content');
+            // Store raw content for copy functionality
+            messageDiv.dataset.rawContent = content;
             contentDiv.innerHTML = marked.parse(content);
+
+            // Add copy button container after content
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'message-actions mt-2 flex gap-2';
+            actionsDiv.innerHTML = `
+                <button class="copy-btn flex items-center gap-1 px-2 py-1 text-xs text-neutral-500 dark:text-dark-300 hover:text-neutral-700 dark:hover:text-dark-100 hover:bg-neutral-100 dark:hover:bg-dark-600 rounded transition-colors" title="Copy response">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    <span>Copy</span>
+                </button>
+            `;
+            contentDiv.appendChild(actionsDiv);
+
+            // Attach copy handler
+            const copyBtn = actionsDiv.querySelector('.copy-btn');
+            copyBtn.addEventListener('click', () => copyToClipboard(content, copyBtn));
+
+            lucide.createIcons();
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Add assistant message (used for restoring from localStorage)
+        function addAssistantMessage(content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'mb-4 message-animate message-wrapper';
+            messageDiv.dataset.rawContent = content;
+            messageDiv.innerHTML = `
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 bg-neutral-100 dark:bg-dark-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="bot" class="w-4 h-4 text-neutral-600 dark:text-dark-100"></i>
+                    </div>
+                    <div class="flex-1 max-w-[85%]">
+                        <div class="streaming-content markdown-content text-sm text-neutral-800 dark:text-dark-50">
+                            ${marked.parse(content)}
+                            <div class="message-actions mt-2 flex gap-2">
+                                <button class="copy-btn flex items-center gap-1 px-2 py-1 text-xs text-neutral-500 dark:text-dark-300 hover:text-neutral-700 dark:hover:text-dark-100 hover:bg-neutral-100 dark:hover:bg-dark-600 rounded transition-colors" title="Copy response">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                    <span>Copy</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatContent.appendChild(messageDiv);
+
+            // Attach copy handler
+            const copyBtn = messageDiv.querySelector('.copy-btn');
+            copyBtn.addEventListener('click', () => copyToClipboard(content, copyBtn));
+
+            lucide.createIcons();
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 

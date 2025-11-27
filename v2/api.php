@@ -4,6 +4,13 @@
  * Uses OpenAI Responses API with streaming support
  */
 
+// Security headers
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+
 // Secure session configuration
 session_start([
     'cookie_httponly' => true,
