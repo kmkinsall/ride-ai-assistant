@@ -36,7 +36,20 @@ The RIDE AI Guidance Assistant is an intelligent chatbot that helps K-12 educato
 - District profile system for personalized recommendations
 - Knowledge base sidebar with full RIDE guidance document
 - Dark/light mode theming
-- Mobile-responsive design
+- Mobile-responsive design with iPhone optimizations
+
+### Interactive Knowledge Base
+- **Clickable sections** - Click any heading in the Full Document to ask the AI about that topic
+- **Quick Sections** - Pre-built questions for each section of the RIDE guidance
+- **Preloaded questions** - Questions are loaded into the input for review before sending
+- **"Ask AI →" badge** appears on hover to indicate clickable headings
+
+### User Experience
+- **Chat persistence** - Conversations saved to localStorage (auto-restored on refresh, expires after 24 hours)
+- **Copy with formatting** - Copy AI responses with formatting preserved for Word, Google Docs, etc.
+- **Typing indicator** - Animated "Thinking..." indicator while AI processes
+- **Smooth transitions** - Polished fade animations between login and main app
+- **Toast notifications** - Non-intrusive feedback for user actions
 
 ### Security Features
 - Password protection with bcrypt hashing
@@ -44,6 +57,8 @@ The RIDE AI Guidance Assistant is an intelligent chatbot that helps K-12 educato
 - Secure session configuration (HttpOnly, SameSite, Secure cookies)
 - Rate limiting (configurable requests per time window)
 - Session fixation protection
+- Security headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy)
+- Protected v2 folder (config.php, .env, knowledge-base.md blocked from direct access)
 
 ## Tech Stack
 
@@ -204,8 +219,19 @@ For production environments, ensure:
 ### Protected Files
 
 The `.htaccess` file blocks direct access to:
-- `.env` files
-- Other sensitive configuration
+- `.env` and `.env.example` files
+- `config.php` (contains API key logic)
+- `knowledge-base.md` (internal document)
+
+Additionally, `config.php` includes a direct access check as defense-in-depth.
+
+### Mobile Support
+
+The application is optimized for iPhone portrait mode:
+- iOS safe area insets for notch and home indicator
+- 44px minimum touch targets (Apple HIG compliance)
+- 16px input font to prevent iOS zoom on focus
+- Reference panel hidden on mobile to maximize chat space
 
 ## API Endpoints
 
