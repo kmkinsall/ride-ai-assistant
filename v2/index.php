@@ -1674,11 +1674,12 @@ Response format:
                         messageInput.value = question;
                         messageInput.focus();
 
-                        // Optionally auto-send the message
-                        sendMessage();
+                        // Auto-resize the textarea to fit content
+                        messageInput.style.height = 'auto';
+                        messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
 
-                        // Show feedback
-                        showToast(`Asking about: ${topic}`, 'info', 2000);
+                        // Show feedback - let user decide to send
+                        showToast(`Question ready - press Enter or click Send`, 'info', 3000);
 
                         // On mobile, collapse the panel after clicking
                         if (window.innerWidth < 768) {
