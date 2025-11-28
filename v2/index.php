@@ -201,25 +201,15 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
         .page-enter main { animation: slideUp 0.5s ease-out 0.2s both; }
         .copy-btn:active { transform: scale(0.95); }
 
-        /* Smart header - hide on scroll down, show on scroll up */
+        /* Smart header - sticky within scroll container, hide on scroll down */
         .smart-header {
-            position: fixed;
+            position: sticky;
             top: 0;
-            left: 0;
-            right: 0;
-            z-index: 50;
+            z-index: 10;
             transition: transform 0.3s ease;
         }
         .smart-header.header-hidden {
             transform: translateY(-100%);
-        }
-        .smart-header-spacer {
-            height: 73px; /* Match header height (py-4 = 32px + content ~40px) */
-        }
-        @media (max-width: 767px) {
-            .smart-header-spacer {
-                height: 65px; /* Slightly smaller on mobile */
-            }
         }
         @media (max-width: 767px) { .message-actions { opacity: 1; } }
         .sidebar-panel { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: right center; }
@@ -332,53 +322,43 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
 </head>
 <body class="bg-neutral-50 dark:bg-dark-900 text-neutral-800 dark:text-dark-50 min-h-screen transition-colors duration-200 page-enter">
     <div class="flex flex-col h-screen">
-        <!-- Header -->
-        <header id="mainHeader" class="smart-header bg-neutral-50 dark:bg-dark-800 border-b border-neutral-200 dark:border-dark-500 px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-accent-500 dark:bg-accent-500 rounded-lg flex items-center justify-center">
-                    <i data-lucide="book-open" class="w-5 h-5 text-white"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-semibold text-neutral-900 dark:text-dark-50">RIDE AI Guidance Assistant</h1>
-                    <p class="text-xs text-neutral-500 dark:text-dark-200">Rhode Island Department of Education - August 2025 Framework</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <button id="districtProfileBtn" class="flex items-center gap-1.5 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="District Profile">
-                    <i data-lucide="building-2" class="w-5 h-5 text-neutral-600 dark:text-dark-100"></i>
-                    <span id="districtProfileLabel" class="text-xs font-medium text-neutral-600 dark:text-dark-100 hidden sm:inline">District Profile</span>
-                    <span id="districtProfileBadge" class="hidden w-2 h-2 bg-green-500 rounded-full"></span>
-                </button>
-                <button id="clearChatBtn" class="p-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="Clear Chat">
-                    <i data-lucide="trash-2" class="w-5 h-5 text-neutral-600 dark:text-dark-100"></i>
-                </button>
-                <button id="darkModeBtn" class="p-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="Toggle Dark Mode">
-                    <i data-lucide="moon" class="w-5 h-5 text-neutral-600 dark:text-dark-100 dark-icon"></i>
-                    <i data-lucide="sun" class="w-5 h-5 text-neutral-600 dark:text-dark-100 light-icon hidden"></i>
-                </button>
-                <button id="togglePanelBtn" class="p-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="Toggle Reference Panel">
-                    <i data-lucide="panel-right" class="w-5 h-5 text-neutral-600 dark:text-dark-100"></i>
-                </button>
-                <button id="settingsBtn" class="p-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="AI Settings & Transparency">
-                    <i data-lucide="settings" class="w-5 h-5 text-neutral-600 dark:text-dark-100"></i>
-                </button>
-                <div class="w-px h-6 bg-neutral-200 dark:bg-dark-500 mx-1"></div>
-                <a href="logout.php" class="flex items-center gap-1.5 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-neutral-600 dark:text-dark-100 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors" title="Log Out">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
-                    <span class="text-xs font-medium hidden sm:inline">Log Out</span>
-                </a>
-            </div>
-        </header>
-        <!-- Spacer for fixed header -->
-        <div class="smart-header-spacer flex-shrink-0"></div>
-
         <!-- Main Content -->
         <main class="flex-1 flex overflow-hidden">
             <!-- Chat Panel -->
-            <div class="flex-1 flex flex-col bg-neutral-50 dark:bg-[#222221]">
+            <div class="flex-1 flex flex-col bg-neutral-50 dark:bg-[#222221] relative">
                 <!-- Chat Messages -->
-                <div id="chatMessages" class="flex-1 overflow-y-auto p-6">
-                    <div id="chatContent" class="max-w-[1100px] mx-auto">
+                <div id="chatMessages" class="flex-1 overflow-y-auto">
+                    <!-- Header - sticky, hides on scroll down, shows on scroll up -->
+                    <header id="mainHeader" class="smart-header bg-neutral-50/90 dark:bg-dark-800/90 backdrop-blur-sm border-b border-neutral-200/50 dark:border-dark-500/50 px-6 py-2 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-accent-500 dark:bg-accent-500 rounded-lg flex items-center justify-center">
+                                <i data-lucide="book-open" class="w-4 h-4 text-white"></i>
+                            </div>
+                            <h1 class="text-lg font-semibold text-neutral-900 dark:text-dark-50">RIDE AI Guidance Assistant</h1>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="districtProfileBtn" class="p-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors relative" title="District Profile">
+                                <i data-lucide="building-2" class="w-5 h-5 text-neutral-600 dark:text-dark-100"></i>
+                                <span id="districtProfileBadge" class="hidden absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full"></span>
+                            </button>
+                            <button id="darkModeBtn" class="p-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="Toggle Dark Mode">
+                                <i data-lucide="moon" class="w-5 h-5 text-neutral-600 dark:text-dark-100 dark-icon"></i>
+                                <i data-lucide="sun" class="w-5 h-5 text-neutral-600 dark:text-dark-100 light-icon hidden"></i>
+                            </button>
+                            <button id="togglePanelBtn" class="p-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="Toggle Reference Panel">
+                                <i data-lucide="panel-right" class="w-5 h-5 text-neutral-600 dark:text-dark-100"></i>
+                            </button>
+                            <button id="settingsBtn" class="p-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="AI Settings & Transparency">
+                                <i data-lucide="settings" class="w-5 h-5 text-neutral-600 dark:text-dark-100"></i>
+                            </button>
+                            <div class="w-px h-6 bg-neutral-200 dark:bg-dark-500 mx-1"></div>
+                            <a href="logout.php" class="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-neutral-600 dark:text-dark-100 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors" title="Log Out">
+                                <i data-lucide="log-out" class="w-5 h-5"></i>
+                            </a>
+                        </div>
+                    </header>
+                    <div class="p-6">
+                    <div id="chatContent" class="max-w-[900px] mx-auto">
                     <!-- Welcome Screen -->
                     <div id="welcomeScreen" class="max-w-2xl mx-auto py-8">
                         <div class="text-center mb-8">
@@ -462,12 +442,15 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
                         </div>
                     </div>
                     </div>
+                    <!-- Bottom padding for floating input -->
+                    <div class="h-24"></div>
+                    </div>
                 </div>
 
-                <!-- Input Area -->
-                <div class="border-t border-neutral-200 dark:border-dark-500 bg-neutral-100 dark:bg-dark-800 p-4">
-                    <div class="max-w-3xl mx-auto">
-                        <div class="message-box flex items-center bg-neutral-50 dark:bg-dark-700 border border-neutral-200 dark:border-dark-400 rounded-xl px-2 py-1 gap-2 focus-within:ring-2 focus-within:ring-blue-200 dark:focus-within:ring-dark-400 focus-within:border-transparent transition-all shadow-sm">
+                <!-- Fixed Input Area - locked to bottom -->
+                <div class="absolute bottom-0 left-0 right-0 p-4 pb-6 z-20">
+                    <div class="max-w-[800px] mx-auto">
+                        <div class="message-box flex items-center bg-neutral-50/95 dark:bg-dark-700/95 backdrop-blur-sm border border-neutral-200 dark:border-dark-400 rounded-2xl px-3 py-2 gap-2 focus-within:ring-2 focus-within:ring-accent-300 dark:focus-within:ring-accent-600 focus-within:border-transparent transition-all shadow-lg">
                             <div class="mode-toggle-wrapper relative flex-shrink-0">
                                 <button id="modeToggleBtn" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all hover:bg-neutral-100 dark:hover:bg-dark-600 text-neutral-700 dark:text-dark-100" title="Switch Mode">
                                     <i id="modeIcon" data-lucide="graduation-cap" class="w-4 h-4"></i>
@@ -497,10 +480,13 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
                                     </button>
                                 </div>
                             </div>
+                            <button id="clearChatBtn" class="flex-shrink-0 p-2 text-neutral-400 dark:text-dark-300 hover:text-neutral-600 dark:hover:text-dark-100 transition-all" title="Clear Chat">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
                             <div class="w-px h-6 bg-neutral-200 dark:bg-dark-500 flex-shrink-0"></div>
                             <textarea id="messageInput" placeholder="Ask about the RIDE AI Guidance..." rows="1" class="flex-1 bg-transparent outline-none border-none resize-none text-sm text-neutral-800 dark:text-dark-50 placeholder-neutral-400 dark:placeholder-dark-300 py-2" style="max-height: 100px;"></textarea>
-                            <button id="sendBtn" class="flex-shrink-0 w-9 h-9 bg-accent-500 dark:bg-accent-500 text-white rounded-lg hover:bg-accent-600 dark:hover:bg-accent-600 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" title="Send message">
-                                <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                            <button id="sendBtn" class="flex-shrink-0 p-2 text-neutral-400 dark:text-dark-300 hover:text-neutral-600 dark:hover:text-dark-100 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" title="Send message">
+                                <i data-lucide="arrow-up" class="w-5 h-5"></i>
                             </button>
                         </div>
                     </div>
@@ -1579,14 +1565,15 @@ Response format:
             `;
             chatContent.appendChild(messageDiv);
             lucide.createIcons();
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Scroll to show the start of the response, not the bottom
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
             return messageDiv;
         }
 
         function updateStreamingMessage(messageDiv, content) {
             const contentDiv = messageDiv.querySelector('.streaming-content');
             contentDiv.innerHTML = marked.parse(content) + '<span class="inline-block w-2 h-4 bg-neutral-400 dark:bg-dark-400 animate-pulse ml-1"></span>';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Don't auto-scroll during streaming - let user read at their own pace
         }
 
         function finalizeStreamingMessage(messageDiv, content) {
@@ -1611,7 +1598,7 @@ Response format:
             copyBtn.addEventListener('click', () => copyToClipboard(content, copyBtn));
 
             lucide.createIcons();
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Don't auto-scroll when complete - user controls their reading position
         }
 
         // Add assistant message (used for restoring from localStorage)
@@ -1652,7 +1639,7 @@ Response format:
             messageDiv.className = 'mb-4 message-animate';
 
             if (type === 'user') {
-                const bubbleColor = 'bg-accent-500 dark:bg-dark-900';
+                const bubbleColor = 'bg-neutral-900 dark:bg-dark-900';
                 messageDiv.innerHTML = `
                     <div class="flex justify-end">
                         <div class="max-w-[80%] ${bubbleColor} text-white rounded-2xl rounded-br-md px-4 py-3">
@@ -1730,13 +1717,12 @@ Response format:
         // Smart header - hide on scroll down, show on scroll up
         const mainHeader = document.getElementById('mainHeader');
         let lastScrollTop = 0;
-        let scrollThreshold = 10; // Minimum scroll distance to trigger hide/show
+        const scrollThreshold = 10;
 
         chatMessages.addEventListener('scroll', function() {
             const scrollTop = chatMessages.scrollTop;
             const scrollDelta = scrollTop - lastScrollTop;
 
-            // Only trigger if scroll distance exceeds threshold
             if (Math.abs(scrollDelta) > scrollThreshold) {
                 if (scrollDelta > 0 && scrollTop > 50) {
                     // Scrolling down - hide header
@@ -1750,12 +1736,13 @@ Response format:
             lastScrollTop = scrollTop;
         });
 
-        // Always show header when at top of chat
+        // Always show header when at top
         chatMessages.addEventListener('scroll', function() {
             if (chatMessages.scrollTop < 20) {
                 mainHeader.classList.remove('header-hidden');
             }
         });
+
     </script>
 </body>
 </html>
