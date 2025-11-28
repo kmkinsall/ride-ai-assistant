@@ -212,9 +212,12 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
             transform: translateY(-100%);
         }
         @media (max-width: 767px) { .message-actions { opacity: 1; } }
+        /* Desktop sidebar panel */
         .sidebar-panel { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: right center; }
-        .sidebar-panel.collapsed { width: 0 !important; opacity: 0; transform: translateX(100%); overflow: hidden; border-left: none; padding: 0; }
-        .sidebar-panel.collapsed > * { opacity: 0; visibility: hidden; }
+        @media (min-width: 768px) {
+            .sidebar-panel.collapsed { width: 0 !important; opacity: 0; transform: translateX(100%); overflow: hidden; border-left: none; padding: 0; }
+            .sidebar-panel.collapsed > * { opacity: 0; visibility: hidden; }
+        }
 
         /* Mobile / iPhone Portrait Optimizations */
         @media (max-width: 767px) {
@@ -223,20 +226,115 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
             /* Safe area for iPhone notch and home indicator */
             body {
                 padding-top: env(safe-area-inset-top);
-                padding-bottom: env(safe-area-inset-bottom);
                 padding-left: env(safe-area-inset-left);
                 padding-right: env(safe-area-inset-right);
             }
 
-            /* Hide reference panel completely on mobile */
-            .sidebar-panel { display: none !important; }
+            /* Mobile slide-out drawer for reference panel */
+            .sidebar-panel {
+                position: fixed !important;
+                top: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 90% !important;
+                max-width: 380px !important;
+                z-index: 100 !important;
+                transform: translateX(100%);
+                transition: transform 0.3s ease !important;
+                border-left: none !important;
+                box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+                opacity: 1 !important;
+                overflow: visible !important;
+            }
+            .sidebar-panel:not(.collapsed) {
+                transform: translateX(0) !important;
+            }
+            .sidebar-panel:not(.collapsed) > * {
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            .sidebar-panel.collapsed {
+                transform: translateX(100%) !important;
+            }
 
-            /* Larger touch targets - exclude header icons */
-            main button, main a, form button, form a { min-height: 44px; }
-            header button, header a { min-height: auto; min-width: 44px; padding: 8px; }
+            /* Mobile overlay backdrop */
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 99;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            .mobile-overlay.active {
+                display: block;
+                opacity: 1;
+            }
 
-            /* Fix chat input area */
-            #messageInput { font-size: 16px !important; } /* Prevents iOS zoom on focus */
+            /* Compact header for mobile */
+            header.smart-header {
+                padding: 0.5rem 1rem !important;
+            }
+            header h1 {
+                font-size: 1rem !important;
+            }
+            header .flex.items-center.gap-3 {
+                gap: 0.5rem !important;
+            }
+            header .flex.items-center.gap-2 {
+                gap: 0.25rem !important;
+            }
+            header button, header a {
+                padding: 0.5rem !important;
+                min-width: 44px;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            header .w-8.h-8 {
+                width: 1.75rem !important;
+                height: 1.75rem !important;
+            }
+            header .w-8.h-8 i, header .w-8.h-8 svg {
+                width: 0.875rem !important;
+                height: 0.875rem !important;
+            }
+            /* Hide divider on mobile header */
+            header .w-px.h-6 {
+                display: none;
+            }
+
+            /* Floating input bar mobile optimization */
+            .absolute.bottom-0 {
+                padding: 0.75rem !important;
+                padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important;
+            }
+            .absolute.bottom-0 .max-w-\[800px\] {
+                max-width: 100% !important;
+            }
+            .message-box {
+                padding: 0.5rem 0.75rem !important;
+                border-radius: 1.25rem !important;
+            }
+            #messageInput {
+                font-size: 16px !important; /* Prevents iOS zoom on focus */
+                padding: 0.5rem 0 !important;
+            }
+            /* Compact mode toggle on mobile */
+            #modeToggleBtn {
+                padding: 0.5rem !important;
+            }
+            #modeToggleBtn span {
+                display: none;
+            }
+            #modeToggleBtn .w-3.h-3 {
+                display: none;
+            }
 
             /* Improve message readability */
             .markdown-content p { font-size: 0.9375rem; line-height: 1.6; }
@@ -245,12 +343,28 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
             /* Full width messages on mobile */
             .max-w-\[85\%\] { max-width: 95% !important; }
             .max-w-\[80\%\] { max-width: 90% !important; }
+
+            /* Chat content padding for mobile */
+            .p-6 {
+                padding: 1rem !important;
+            }
+            #chatContent {
+                max-width: 100% !important;
+            }
+
+            /* Bottom padding adjustment for floating input */
+            .h-24 {
+                height: 5rem !important;
+            }
         }
 
         /* Extra small screens (iPhone SE, etc.) */
         @media (max-width: 375px) {
             html { font-size: 15px; }
             .markdown-content p { font-size: 0.875rem; }
+            header h1 {
+                font-size: 0.875rem !important;
+            }
         }
 
         /* Prevent horizontal scroll */
@@ -321,6 +435,8 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
     </style>
 </head>
 <body class="bg-neutral-50 dark:bg-dark-900 text-neutral-800 dark:text-dark-50 min-h-screen transition-colors duration-200 page-enter">
+    <!-- Mobile overlay for slide-out drawer -->
+    <div id="mobileOverlay" class="mobile-overlay"></div>
     <div class="flex flex-col h-screen">
         <!-- Main Content -->
         <main class="flex-1 flex overflow-hidden">
@@ -334,7 +450,7 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
                             <div class="w-8 h-8 bg-accent-500 dark:bg-accent-500 rounded-lg flex items-center justify-center">
                                 <i data-lucide="book-open" class="w-4 h-4 text-white"></i>
                             </div>
-                            <h1 class="text-lg font-semibold text-neutral-900 dark:text-dark-50">RIDE AI Guidance Assistant</h1>
+                            <h1 class="text-lg font-semibold text-neutral-900 dark:text-dark-50">RIDE AI<span class="hidden md:inline"> Guidance Assistant</span></h1>
                         </div>
                         <div class="flex items-center gap-2">
                             <button id="districtProfileBtn" class="p-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors relative" title="District Profile">
@@ -501,10 +617,15 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
                             <i data-lucide="file-text" class="w-4 h-4 text-neutral-600 dark:text-dark-200"></i>
                             <h2 class="font-semibold text-neutral-900 dark:text-dark-50">Reference Document</h2>
                         </div>
-                        <a href="RIDE.pdf" target="_blank" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-dark-200 hover:text-neutral-900 dark:hover:text-dark-50 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="Open original PDF">
-                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                            <span>PDF</span>
-                        </a>
+                        <div class="flex items-center gap-2">
+                            <a href="RIDE.pdf" target="_blank" class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-dark-200 hover:text-neutral-900 dark:hover:text-dark-50 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="Open original PDF">
+                                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                <span>PDF</span>
+                            </a>
+                            <button id="closePanelBtn" class="md:hidden p-2 hover:bg-neutral-100 dark:hover:bg-dark-700 rounded-lg transition-colors" title="Close panel">
+                                <i data-lucide="x" class="w-5 h-5 text-neutral-600 dark:text-dark-200"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="flex gap-2">
                         <button id="tabGuide" class="tab-btn flex-1 px-3 py-2 text-xs font-medium rounded-lg bg-accent-500 dark:bg-accent-500 text-white transition-colors">Full Document</button>
@@ -1390,13 +1511,31 @@ Response format:
             }
         });
 
-        togglePanelBtn.addEventListener('click', function() {
-            panelVisible = !panelVisible;
+        const mobileOverlay = document.getElementById('mobileOverlay');
+
+        function togglePanel(show) {
+            panelVisible = show !== undefined ? show : !panelVisible;
             if (panelVisible) {
                 referencePanel.classList.remove('collapsed');
+                // Show overlay on mobile
+                if (window.innerWidth < 768) {
+                    mobileOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
             } else {
                 referencePanel.classList.add('collapsed');
+                mobileOverlay.classList.remove('active');
+                document.body.style.overflow = '';
             }
+        }
+
+        togglePanelBtn.addEventListener('click', function() {
+            togglePanel();
+        });
+
+        // Close panel when clicking overlay
+        mobileOverlay.addEventListener('click', function() {
+            togglePanel(false);
         });
 
         tabGuide.addEventListener('click', function() { setActiveTab('guide'); });
@@ -1677,10 +1816,22 @@ Response format:
             if (window.innerWidth < 768) {
                 referencePanel.classList.add('collapsed');
                 panelVisible = false;
+                mobileOverlay.classList.remove('active');
+                document.body.style.overflow = '';
             } else if (!panelVisible && window.innerWidth >= 768) {
                 referencePanel.classList.remove('collapsed');
                 panelVisible = true;
+                mobileOverlay.classList.remove('active');
+                document.body.style.overflow = '';
             }
+        }
+
+        // Close panel button (mobile)
+        const closePanelBtn = document.getElementById('closePanelBtn');
+        if (closePanelBtn) {
+            closePanelBtn.addEventListener('click', function() {
+                togglePanel(false);
+            });
         }
 
         window.addEventListener('resize', handleResize);
